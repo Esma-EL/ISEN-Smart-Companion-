@@ -27,43 +27,49 @@ fun HistoryScreen(viewModel: InteractionViewModel = viewModel()) {
         Text(text = "History", fontSize = 24.sp)
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Liste des interactions
-        LazyColumn {
+
+        LazyColumn(modifier = Modifier.weight(1f)) {  //   pour gérer l'espace
             items(interactionHistory) { interaction ->
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(8.dp),
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(" ${formatDate(interaction.date)}", fontSize = 14.sp, color = Color.Gray)
-                        Text(" ${interaction.question}", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(
+                            " ${formatDate(interaction.date)}",
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
+                        Text(
+                            " ${interaction.question}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                         Text(" ${interaction.answer}", fontSize = 16.sp)
-
-
-
                     }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        // Bouton pour supprimer tout l'historique
         Button(
             onClick = {
                 coroutineScope.launch {
-                    viewModel.deleteAllInteractions() // Supprime tout l'historique
+                    viewModel.deleteAllInteractions()
                 }
             },
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-            modifier = Modifier.fillMaxWidth()
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB71C1C)),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
         ) {
             Text("Effacer l'historique", color = Color.White)
         }
     }
 }
 
-// Fonction pour convertir le timestamp en date lisible
+// fonction pour convertir le timestamp en date lisible
 fun formatDate(timestamp: Long): String {
     val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
     return sdf.format(Date(timestamp))

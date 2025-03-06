@@ -5,7 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,18 +26,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.lifecycle.viewmodel.compose.viewModel
 import fr.isen.elakrimi.isensmartcompanion.Data.InteractionViewModel
 
-
 @Composable
 fun AssistantScreen(viewModel: InteractionViewModel = viewModel()) {
-    var question by remember { mutableStateOf("") } // Question entrée par l'utilisateur
-    var aiResponse by remember { mutableStateOf("") } // Réponse de l'IA
+    var question by remember { mutableStateOf("") }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    // Récupération de l'historique des interactions
     val interactionHistory by viewModel.allInteractions.collectAsState(initial = emptyList())
 
-    // Modèle Gemini AI
     val generativeModel = GenerativeModel("gemini-1.5-flash", "AIzaSyBTyoEZSxYr1kvqfhoazLiz3LB9YvppZrQ")
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -48,65 +44,38 @@ fun AssistantScreen(viewModel: InteractionViewModel = viewModel()) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            // Titre ISEN Smart Companion
-            Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start // Aligne à gauche
-                ) {
-                    Text(
-                        text = "ISEN",
-                        fontSize = 48.sp,  // Augmenter la taille de "ISEN"
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB71C1C) // 🔴 Rouge ISEN
-                    )
+            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+                    Text("ISEN", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB71C1C))
                 }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start // Aligne à gauche
-                ) {
-                    Text(
-                        text = "Smart Companion",
-                        fontSize = 18.sp,
-                        color = Color.Black // Noir pour "Smart Companion"
-                    )
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+                    Text("Smart Companion", fontSize = 18.sp, color = Color.Black)
                 }
             }
 
-
-            // Affichage de la réponse actuelle (question + réponse)
-            if (aiResponse.isNotEmpty()) {
-                Row(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .background(Color(0xFFF0F0F0), CircleShape) // Gris pâle
-                            .padding(8.dp)
-                            .weight(1f)
-                    ) {
-                        Text("❓ $question", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                items(interactionHistory) { interaction ->
+                    Column(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFFF0F0F0), CircleShape)
+                                .padding(8.dp)
+                        ) {
+                            Text("❓ ${interaction.question}", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Box(
+                            modifier = Modifier
+                                .background(Color.White, CircleShape)
+                                .padding(8.dp)
+                                .padding(top = 8.dp)
+                        ) {
+                            Text("💬 ${interaction.answer}", fontSize = 16.sp)
+                        }
                     }
-
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .background(Color.White, CircleShape) // Fond blanc
-                            .padding(8.dp)
-                            .weight(1f)
-                    ) {
-                        Text(" $aiResponse", fontSize = 16.sp)
-                    }
-
                 }
             }
         }
 
-        // Champ de texte + bouton envoyer en bas
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -115,52 +84,40 @@ fun AssistantScreen(viewModel: InteractionViewModel = viewModel()) {
                 .align(Alignment.BottomCenter),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Champ de saisie
             TextField(
                 value = question,
                 onValueChange = { question = it },
                 placeholder = { Text("Posez votre question...") },
                 textStyle = TextStyle(fontSize = 16.sp),
                 singleLine = true,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp)
+                modifier = Modifier.weight(1f).padding(end = 8.dp)
             )
 
-            // Bouton envoyer
             Button(
                 onClick = {
                     if (question.isNotEmpty()) {
-                        // Envoyer la question à Gemini AI
                         coroutineScope.launch(Dispatchers.IO) {
-                            aiResponse = getAIResponse(generativeModel, question)
-
-                            // Ajouter l'interaction dans la base de données
-                            viewModel.insertInteraction(question, aiResponse)
+                            val response = getAIResponse(generativeModel, question)
+                            withContext(Dispatchers.Main) {
+                                viewModel.insertInteraction(question, response)
+                                question = ""
+                            }
                         }
                     } else {
                         Toast.makeText(context, "Veuillez entrer une question", Toast.LENGTH_SHORT).show()
                     }
                 },
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape),
+                modifier = Modifier.size(48.dp).clip(CircleShape),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB71C1C))
             ) {
-                Icon(
-                    imageVector = Icons.Filled.Send,
-                    contentDescription = "Envoyer",
-                    tint = Color.White
-                )
+                Icon(Icons.Filled.ArrowForward, contentDescription = "Envoyer", tint = Color.White)
             }
         }
     }
 }
 
-// Fonction pour interroger Gemini AI
 private suspend fun getAIResponse(generativeModel: GenerativeModel, input: String): String {
     return try {
-        // Appel à Gemini AI pour obtenir la réponse
         val response = generativeModel.generateContent(input)
         response.text ?: "Aucune réponse obtenue"
     } catch (e: Exception) {

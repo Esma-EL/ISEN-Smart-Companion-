@@ -10,10 +10,10 @@ data class Interaction(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val question: String,
     val answer: String,
-    val date: Long // 🔄 Converti `Date` en `Long` pour éviter les erreurs Room
+    val date: Long
 )
 
-// 🔥 TypeConverter pour `Date`
+//  TypeConverter pour `Date`
 class Converters {
     @TypeConverter
     fun fromTimestamp(value: Long?): Date? {

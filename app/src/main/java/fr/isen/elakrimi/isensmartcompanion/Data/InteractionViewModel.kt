@@ -14,41 +14,44 @@ class InteractionViewModel(application: Application) : AndroidViewModel(applicat
     private val _allInteractions = MutableStateFlow<List<Interaction>>(emptyList())
     val allInteractions = _allInteractions.asStateFlow()
 
+
+    private val _currentInteraction = MutableStateFlow<Interaction?>(null)
+    val currentInteraction = _currentInteraction.asStateFlow()
+
     init {
-        // Chargement initial des interactions à partir de la base de données
+
         viewModelScope.launch(Dispatchers.IO) {
             _allInteractions.value = interactionDao.getAllInteractions()
         }
     }
 
-    // Insérer une interaction et mettre à jour l'historique
-    // Insérer une interaction et mettre à jour l'historique
+
     fun insertInteraction(question: String, answer: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val interaction = Interaction(
                 question = question,
                 answer = answer,
-                date = System.currentTimeMillis()  // Utilise le timestamp actuel
+                date = System.currentTimeMillis()
             )
-            interactionDao.insertInteraction(interaction)  // Insère l'interaction dans la base de données
-        }
-    }
+            interactionDao.insertInteraction(interaction)  //
 
-    fun deleteInteraction(interaction: Interaction) {
-        viewModelScope.launch {
-            interactionDao.deleteInteraction(interaction)
 
-            // Mise à jour de l'historique après la suppression
             _allInteractions.value = interactionDao.getAllInteractions()
+
+
+            _currentInteraction.value = interaction
         }
     }
+
 
     fun deleteAllInteractions() {
         viewModelScope.launch(Dispatchers.IO) {
             interactionDao.deleteAllInteractions()
 
-            // Mise à jour de l'historique après la suppression de tout
+
             _allInteractions.value = interactionDao.getAllInteractions()
         }
     }
 }
+
+

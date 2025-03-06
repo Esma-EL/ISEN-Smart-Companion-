@@ -1,6 +1,5 @@
 package fr.isen.elakrimi.isensmartcompanion
 
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -19,10 +19,7 @@ import androidx.navigation.compose.composable
 import fr.isen.elakrimi.isensmartcompanion.screen.AssistantScreen
 import fr.isen.elakrimi.isensmartcompanion.event.EventsScreen
 import fr.isen.elakrimi.isensmartcompanion.history.HistoryScreen
-
-
-
-
+import fr.isen.elakrimi.isensmartcompanion.calendar.CalendarScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +40,8 @@ fun BottomNavigationBar(navController: NavHostController) {
     val items = listOf(
         NavigationItem("home", "Home", Icons.Filled.Home),
         NavigationItem("events", "Events", Icons.Filled.Event),
-        NavigationItem("history", "History", Icons.Filled.History)
+        NavigationItem("history", "History", Icons.Filled.History),
+        NavigationItem("calendar", "Calendar", Icons.Filled.CalendarMonth) // Correction ici
     )
 
     NavigationBar {
@@ -66,6 +64,6 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
         composable("home") { AssistantScreen() }
         composable("events") { EventsScreen(navController) }
         composable("history") { HistoryScreen() }
+        composable("calendar") { CalendarScreen() }
     }
 }
-
